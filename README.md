@@ -1,151 +1,160 @@
-# Monitor de Investimentos - Backend
+# 📈 Projeto Finance - API de Gestão de Investimentos
 
-Este é o repositório do backend do **Monitor de Investimentos**, uma API RESTful completa desenvolvida com **Java e Spring Boot**. A API foi projetada para ser o núcleo do sistema, fornecendo todos os endpoints necessários para o gerenciamento de investidores, carteiras, ativos financeiros e transações, com integração em tempo real à bolsa de valores.
-
----
-
-## Arquitetura e Visão Geral
-
-O Monitor de Investimentos adota uma arquitetura desacoplada, separando a interface do usuário (frontend) da lógica de negócio e persistência de dados (backend).
-
-- **Backend (este repositório):** Desenvolvido como uma API RESTful, é responsável por toda a lógica de negócio, comunicação com o banco de dados PostgreSQL via Supabase, integração com a API externa HG Brasil Finance para cotações em tempo real, e exposição de endpoints seguros e bem definidos.
-
-- **Frontend:** Desenvolvido em React e disponível em um repositório separado, consome os endpoints fornecidos pelo backend para renderizar a interface, gerenciar interações do usuário e apresentar os dados de forma dinâmica, sem nunca acessar o banco de dados diretamente.
+API RESTful desenvolvida em **Java 21 com Spring Boot** para o gerenciamento de investidores, carteiras de investimentos, ativos financeiros, registro de transações (compra/venda) e acompanhamento de cotações em tempo real/históricas através da integração com a **HG Brasil Finance API**.
 
 ---
 
-## Funcionalidades da API
+## 🚀 Tecnologias Utilizadas
 
-A API fornece endpoints completos para todas as funcionalidades do sistema:
-
-- **Gerenciamento de Investidores:** CRUD completo para cadastro e manutenção de investidores.
-- **Gerenciamento de Carteiras:** Criação e manutenção de carteiras de investimento vinculadas a investidores.
-- **Ativos Financeiros:** Cadastro de ativos com busca automática de cotação em tempo real via HG Brasil Finance no momento do cadastro, com persistência offline da cotação no banco local.
-- **Transações:** Registro de operações de compra e venda de ativos dentro de carteiras.
-- **Relatório Agregado:** Endpoint que combina dados locais com cotações em tempo real, retornando o valor total investido e o valor atual da carteira com base nos preços do mercado.
-- **Persistência Offline:** Todas as cotações recuperadas da API externa são salvas localmente para consulta sem dependência de internet.
-- **Tratamento de Exceções:** Respostas padronizadas com os status HTTP corretos (200, 201, 404, 502, 500) para todos os cenários de erro.
+* **Linguagem:** Java 21
+* **Framework:** Spring Boot 3.x (Spring Web, Spring Data JPA)
+* **Banco de Dados:** MySQL 8.0 (compatível também com PostgreSQL via JPA/Hibernate)
+* **Documentação da API:** Springdoc OpenAPI / Swagger UI
+* **Integração Externa:** HG Brasil Finance API
+* **Gerenciador de Dependências:** Maven (com Maven Wrapper incluído)
 
 ---
 
-## Documentação da API (Swagger)
+## 📂 Estrutura do Projeto
 
-A API está documentada com Springdoc (Swagger UI). Após iniciar a aplicação, a documentação interativa fica disponível para consulta e teste de todos os endpoints.
+O projeto segue a arquitetura em camadas e está organizado no pacote `dev2.projeto_semestre`:
 
-**URL da Documentação (projeto deve estar rodando):**
-```
-http://localhost:8080/swagger-ui/index.html
+```text
+back-finance/projeto-finance/
+├── pom.xml
+└── src/main/
+    ├── java/dev2/projeto_semestre/
+    │   ├── controller/       # Endpoints REST (AtivoFinanceiro, Carteira, Investidor, Transacao)
+    │   ├── dto/              # Objetos de Transferência de Dados (Request, Response e Resumo)
+    │   ├── exceptions/       # Exceções personalizadas e GlobalExceptionHandler
+    │   ├── model/            # Entidades JPA (AtivoFinanceiro, Carteira, CotacaoHistorica, Investidor, Transacao)
+    │   ├── repository/       # Interfaces de acesso ao banco de dados (Spring Data JPA)
+    │   ├── service/          # Regras de negócio e integração externa (HgBrasilApiService)
+    │   └── ProjetoSemestreApplication.java
+    └── resources/
+        └── application.properties
 ```
 
 ---
 
-## Tecnologias Utilizadas
+## ⚙️ Pré-requisitos
 
-- **Java 17+** — Linguagem principal do projeto.
-- **Spring Boot** — Framework principal para construção da API.
-- **Spring Data JPA / Hibernate** — Para persistência de dados e mapeamento objeto-relacional.
-- **PostgreSQL (via Supabase)** — Banco de dados relacional hospedado e gerenciado pelo Supabase.
-- **HG Brasil Finance API** — API externa para busca de cotações de ações em tempo real.
-- **Springdoc (Swagger UI)** — Para documentação interativa da API.
-- **Maven** — Gerenciador de dependências e build do projeto.
-- **RestTemplate** — Para consumo da API externa HG Brasil.
+* **JDK 21** instalado.
+* **MySQL 8.0** instalado localmente ou rodando via **Docker**.
+* Uma chave de API válida da **[HG Brasil Finance](https://hgbrasil.com/status/finance)**.
 
 ---
 
-## Modelagem do Banco de Dados
+## 🔒 Configuração de Segurança e Variáveis de Ambiente
 
-O sistema possui 5 tabelas relacionadas:
+Por segurança, nenhuma credencial fica salva diretamente no código-fonte. Antes de executar a aplicação, configure as variáveis de ambiente exigidas pelo `application.properties`:
 
-| Tabela | Descrição |
-|---|---|
-| `tb_investidor` | Dados dos investidores cadastrados |
-| `tb_carteira` | Carteiras vinculadas a investidores (N:1) |
-| `tb_ativo_financeiro` | Ativos da bolsa cadastrados no sistema |
-| `tb_transacao` | Operações de compra/venda (N:1 com carteira e ativo) |
-| `tb_cotacao_historica` | Histórico de cotações salvas da API externa (N:1 com ativo) |
+| Variável | Descrição | Exemplo |
+| :--- | :--- | :--- |
+| `DB_PASSWORD` | Senha do usuário do banco de dados MySQL | `minha_senha_segura` |
+| `HG_API_KEY` | Chave de autenticação da API HG Brasil Finance | `sua_chave_hg_brasil` |
 
----
-
-## Pré-requisitos
-
-- Java (JDK) 17 ou superior
-- Maven 3.8+
-- O projeto já está configurado para utilizar o banco de dados PostgreSQL no Supabase. Não é necessário criar um novo banco.
+*(Opcional)* Caso utilize um banco MySQL hospedado em nuvem ou com usuário/URL personalizados, você também pode parametrizar `DB_URL` e `DB_USERNAME`.
 
 ---
 
-## Configuração e Execução
+## 🗄️ Subindo o Banco de Dados (MySQL via Docker)
 
-### 1. Clone o repositório
+Caso não tenha o MySQL instalado localmente, você pode subir um container isolado e seguro em `localhost:3306` com o comando:
 
 ```bash
-git clone https://github.com/dddapx/Projeto-Dev-2.git
-cd Projeto-Dev-2/projeto-semestre
+docker run --name mysql-finance \
+  -e MYSQL_ROOT_PASSWORD=sua_senha_aqui \
+  -e MYSQL_DATABASE=db_finance \
+  -p 3306:3306 \
+  -d mysql:8.0
 ```
 
-### 2. Execute o projeto
-
-```bash
-mvn spring-boot:run
-```
-
-A API estará disponível em `http://localhost:8080`.
-
-A documentação Swagger estará disponível em `http://localhost:8080/swagger-ui/index.html`.
+> **Nota:** Como o projeto utiliza `spring.jpa.hibernate.ddl-auto=update`, todas as tabelas (`tb_investidor`, `tb_carteira`, `tb_ativo_financeiro`, `tb_transacao` e `tb_cotacao_historica`) serão criadas automaticamente na primeira execução.
 
 ---
 
-## Endpoints Disponíveis
+## ▶️ Como Executar o Projeto
 
-### Investidores
-| Método | Endpoint | Descrição |
-|---|---|---|
-| GET | `/api/investidores` | Lista todos os investidores |
-| GET | `/api/investidores/{id}` | Busca investidor por ID |
-| POST | `/api/investidores` | Cria novo investidor |
-| PUT | `/api/investidores/{id}` | Atualiza investidor |
-| DELETE | `/api/investidores/{id}` | Remove investidor |
+1. **Clone o repositório e acesse a pasta do projeto Maven:**
+   ```bash
+   git clone https://github.com/bragatto-tec/finance-back.git
+   cd finance-back/back-finance/projeto-finance
+   ```
 
-### Carteiras
-| Método | Endpoint | Descrição |
-|---|---|---|
-| GET | `/api/carteiras` | Lista carteiras (filtro opcional por `?investidorId=`) |
-| GET | `/api/carteiras/{id}` | Busca carteira por ID |
-| GET | `/api/carteiras/{id}/resumo` | Relatório com valor investido e valor atual (tempo real) |
-| POST | `/api/carteiras` | Cria nova carteira |
-| PUT | `/api/carteiras/{id}` | Atualiza carteira |
-| DELETE | `/api/carteiras/{id}` | Remove carteira |
+2. **Exporte as variáveis de ambiente no terminal:**
 
-### Ativos Financeiros
-| Método | Endpoint | Descrição |
-|---|---|---|
-| GET | `/api/ativos` | Lista todos os ativos |
-| GET | `/api/ativos/{id}` | Busca ativo por ID |
-| POST | `/api/ativos` | Cadastra ativo e busca cotação automaticamente |
-| DELETE | `/api/ativos/{id}` | Remove ativo |
+   * **Linux / macOS / WSL / Git Bash:**
+     ```bash
+     export DB_PASSWORD="sua_senha_aqui"
+     export HG_API_KEY="sua_chave_hg_brasil"
+     ```
 
-### Transações
-| Método | Endpoint | Descrição |
-|---|---|---|
-| GET | `/api/transacoes` | Lista transações (filtro opcional por `?carteiraId=`) |
-| POST | `/api/transacoes` | Registra nova transação de compra ou venda |
+   * **Windows (PowerShell):**
+     ```powershell
+     $env:DB_PASSWORD="sua_senha_aqui"
+     $env:HG_API_KEY="sua_chave_hg_brasil"
+     ```
+
+3. **Inicie a aplicação com o Maven Wrapper:**
+
+   * **Linux / macOS / WSL:**
+     ```bash
+     ./mvnw spring-boot:run
+     ```
+
+   * **Windows:**
+     ```cmd
+     mvnw.cmd spring-boot:run
+     ```
+
+4. **Acesse a API e a Documentação Interativa:**
+   * **Base URL:** `http://localhost:8080`
+   * **Swagger UI:** `http://localhost:8080/swagger-ui/index.html`
 
 ---
 
-## Executando o Ecossistema Completo
+## 🛠️ Endpoints Principais
 
-Para que o Monitor de Investimentos funcione em sua totalidade, o frontend e o backend devem ser executados simultaneamente.
+### 👤 Investidores (`/api/investidores`)
+* `POST /api/investidores` — Cadastra um novo investidor.
+* `GET /api/investidores` — Lista todos os investidores cadastrados.
+* `GET /api/investidores/{id}` — Busca um investidor pelo ID.
+* `PUT /api/investidores/{id}` — Atualiza os dados de um investidor.
+* `DELETE /api/investidores/{id}` — Remove um investidor.
 
-**Terminal 1 — Backend:**
+### 💼 Carteiras (`/api/carteiras`)
+* `POST /api/carteiras` — Cria uma nova carteira vinculada a um investidor.
+* `GET /api/carteiras` — Lista todas as carteiras.
+* `GET /api/carteiras/{id}` — Consulta os detalhes de uma carteira específica.
+* `GET /api/carteiras/{id}/resumo` — Retorna o resumo consolidado da carteira (patrimônio, rentabilidade e posição por ativo).
+* `DELETE /api/carteiras/{id}` — Remove uma carteira.
+
+### 📊 Ativos Financeiros (`/api/ativos`)
+* `POST /api/ativos` — Cadastra um ativo (ex.: `PETR4`, `VALE3`) buscando a cotação atualizada via HG Brasil.
+* `GET /api/ativos` — Lista todos os ativos financeiros cadastrados.
+* `GET /api/ativos/{id}` — Consulta um ativo e seu histórico de cotações.
+
+### 💸 Transações (`/api/transacoes`)
+* `POST /api/transacoes` — Registra uma operação de compra ou venda em uma carteira.
+* `GET /api/transacoes` — Lista todas as transações registradas.
+* `GET /api/transacoes/carteira/{carteiraId}` — Lista o histórico de transações de uma carteira específica.
+
+---
+
+## 🛡️ Tratamento de Erros
+
+A API conta com um `GlobalExceptionHandler` centralizado que padroniza as respostas de erro HTTP:
+* **`400 Bad Request` (`BadRequestException`):** Dados inválidos ou regras de negócio violadas (ex.: saldo/quantidade insuficiente para venda).
+* **`404 Not Found` (`NotFoundException`):** Recurso (investidor, carteira ou ativo) não encontrado.
+* **`502 Bad Gateway / Service Error` (`ExternalServiceException`):** Falha de comunicação ou ticker inexistente na API externa da HG Brasil.
+
+---
+
+## 🧪 Testes
+
+Para executar a suíte de testes automatizados:
+
 ```bash
-cd projeto-semestre
-mvn spring-boot:run
+./mvnw test
 ```
-
-**Terminal 2 — Frontend:**
-```bash
-cd seu-frontend
-npm run dev
-```
-
-Com ambas as aplicações em execução, acesse o frontend em `http://localhost:5173` para ter a experiência completa do sistema.
