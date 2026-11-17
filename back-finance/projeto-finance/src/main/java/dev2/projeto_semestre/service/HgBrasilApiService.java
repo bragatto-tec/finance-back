@@ -13,35 +13,22 @@ public class HgBrasilApiService {
     private final String API_KEY = "2aef7024"; 
     private final String BASE_URL = "https://api.hgbrasil.com/finance";
 
-    public Double buscarPrecoAtivo(String ticker) {
-        String url = BASE_URL + "?key=" + API_KEY;
-        RestTemplate restTemplate = new RestTemplate();
-
-        try {
-            Map resposta = restTemplate.getForObject(url, Map.class);
-            Map results = (Map) resposta.get("results");
-            Map stocks = (Map) results.get("stocks");
-            
-            Map dadosDoAtivo = (Map) stocks.get(ticker.toUpperCase());
-
-            if (dadosDoAtivo == null) {
-                throw new ExternalServiceException("O ativo " + ticker + " não foi encontrado na bolsa.");
-            }
-
-            Object valorObj = dadosDoAtivo.get("price");
-            
-            if (valorObj == null) {
-                valorObj = dadosDoAtivo.get("points"); 
-            }
-
-            if (valorObj == null) {
-                throw new ExternalServiceException("Preço/Pontuação não disponível para o ativo " + ticker);
-            }
-
-            return Double.valueOf(valorObj.toString());
-
-        } catch (Exception e) {
-            throw new ExternalServiceException("Erro interno ao processar cotação da HG Brasil.", e);
-        }
+    public BigDecimal buscarPrecoAtivo(String ticker) {
+    String url = UriComponentsBuilder
+            .fromHttpUrl("https://api.hgbrasil.com/v2/finance/quotes")
+            .queryParam("tickers", "B3:" + ticker.toUpperCase())
+            .queryParam("key", apiKey)          
+            .build().encode().toUriString();
+    try {
+        Map resposta = restTemplate.getForObject(url, Map.class);
+        List<Map> results = (List<Map>) resposta.get("results");
+        if (results == null || results.isEmpty())
+            throw new ExternalServiceException("Ativo " + ticker + " não encontrado na B3.");
+        Map quote = (Map) results.get(0).get("quote");
+        return new BigDecimal(quote.get("value").toString());
+    } catch (ExternalServiceException e) {
+        throw e;                                 
+    } catch (Exception e) {
+        throw new ExternalServiceException("Erro ao consultar HG Brasil.", e);
     }
 }
